@@ -1,1 +1,0 @@
-import"./chunk-EQDQRRRY.js";var o=[{path:"join",loadComponent:()=>import("./chunk-74Z3QLKL.js").then(t=>t.CustomerJoinComponent)},{path:"status/:token",loadComponent:()=>import("./chunk-6XYNOPH3.js").then(t=>t.QueueStatusComponent)},{path:"",redirectTo:"join",pathMatch:"full"}];export{o as customerRoutes};
