@@ -34,14 +34,26 @@ public class AuthService {
     private final JwtTokenProvider jwtTokenProvider;
 
     public AuthResponse login(LoginRequest request) {
+        // The demo credentials in README.md (admin@azorte.com, etc.) and the login
+        // field itself imply email addresses work, but V2__create_users.sql seeds
+        // the `username` column as 'admin'/'manager'/'staff1'/'staff2' with email
+        // stored separately, and this only ever queried findByUsername(). Resolve
+        // an email-style identifier to its real username before authenticating.
+        String identifier = request.getUsername();
+        String actualUsername = userRepository.findByUsername(identifier)
+            .map(User::getUsername)
+            .orElseGet(() -> userRepository.findByEmail(identifier)
+                .map(User::getUsername)
+                .orElse(identifier));
+
         Authentication authentication = authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
+            new UsernamePasswordAuthenticationToken(actualUsername, request.getPassword())
         );
 
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         String token = jwtTokenProvider.generateToken(userDetails);
 
-        User user = userRepository.findByUsername(request.getUsername())
+        User user = userRepository.findByUsername(actualUsername)
             .orElseThrow(() -> new BadRequestException("User not found"));
 
         List<String> roles = user.getRoles().stream()
